@@ -1,0 +1,32 @@
+# Gradle files
+.gradle/
+build/
+
+# IntelliJ / Android Studio files
+*.iml
+.idea/
+*.iws
+*.ipr
+
+# Android-specific
+/local.properties
+/captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.ap_
+*.dex
+*.class
+
+# Machine-specific / OS
+.DS_Store
+Thumbs.db
+
+# Database / Temp
+*.db
+*.db-shm
+*.db-wal
+temp/
+
+# Exclude planning documents
+*.pdf
