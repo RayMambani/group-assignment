@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.budgetquest.app.ui.components.*
+import com.budgetquest.app.ui.theme.*
 
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.collectAsState
@@ -27,6 +28,7 @@ import com.budgetquest.app.ui.viewmodel.MainViewModel
 @Composable
 fun DashboardScreen(
     onViewFeatures: () -> Unit,
+    onViewCategories: () -> Unit,
     onLogout: () -> Unit,
     viewModel: MainViewModel = hiltViewModel()
 ) {
@@ -58,7 +60,11 @@ fun DashboardScreen(
         }
 
         item {
-            CategoryOrbGrid(categories = categories, spending = categorySpending)
+            CategoryOrbGrid(
+                categories = categories, 
+                spending = categorySpending,
+                onViewMore = onViewCategories
+            )
         }
 
         item {
@@ -69,7 +75,7 @@ fun DashboardScreen(
             Text(
                 text = "ACTIVE QUESTS",
                 style = MaterialTheme.typography.labelMedium,
-                color = com.budgetquest.app.ui.theme.CyberGold,
+                color = CyberGold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
         }
@@ -77,7 +83,7 @@ fun DashboardScreen(
         items(quests) { quest ->
             Card(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
-                colors = CardDefaults.cardColors(containerColor = com.budgetquest.app.ui.theme.CyberSurface)
+                colors = CardDefaults.cardColors(containerColor = CyberSurface)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(quest.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
@@ -86,10 +92,10 @@ fun DashboardScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     
                     val questColor = when(quest.color) {
-                        "NeonPurple" -> com.budgetquest.app.ui.theme.NeonPurple
-                        "NeonCyan" -> com.budgetquest.app.ui.theme.NeonCyan
-                        "NeonGreen" -> com.budgetquest.app.ui.theme.NeonGreen
-                        else -> com.budgetquest.app.ui.theme.NeonPink
+                        "NeonPurple" -> NeonPurple
+                        "NeonCyan" -> NeonCyan
+                        "NeonGreen" -> NeonGreen
+                        else -> NeonPink
                     }
                     
                     LinearProgressIndicator(
@@ -113,7 +119,7 @@ fun DashboardScreen(
                 ) {
                     Text(
                         "VIEW ALL FEATURES", 
-                        color = com.budgetquest.app.ui.theme.NeonGreen,
+                        color = NeonGreen,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
                     )
@@ -130,7 +136,7 @@ fun DashboardScreen(
                 ) {
                     Text(
                         "SYSTEM LOGOUT", 
-                        color = com.budgetquest.app.ui.theme.NeonPink,
+                        color = NeonPink,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
                     )

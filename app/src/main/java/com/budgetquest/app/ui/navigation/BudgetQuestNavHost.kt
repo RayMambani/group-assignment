@@ -71,6 +71,7 @@ fun BudgetQuestNavHost(
         composable(Screen.Dashboard.route) {
             DashboardScreen(
                 onViewFeatures = { navController.navigate(Screen.Features.route) },
+                onViewCategories = { navController.navigate(Screen.Categories.route) },
                 onLogout = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
@@ -87,7 +88,7 @@ fun BudgetQuestNavHost(
             )
         }
         composable(Screen.Categories.route) {
-            CategoriesScreen()
+            CategoriesScreen(viewModel = mainViewModel)
         }
         composable(Screen.Goals.route) {
             BudgetGoalsScreen(onBack = { navController.popBackStack() }, viewModel = mainViewModel)

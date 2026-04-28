@@ -37,6 +37,9 @@ interface BudgetDao {
     @Delete
     suspend fun deleteCategory(category: CategoryEntity)
 
+    @Query("DELETE FROM expenses WHERE categoryId = :categoryId")
+    suspend fun deleteExpensesByCategory(categoryId: Int)
+
     @Query("SELECT * FROM expenses WHERE userId = :userId ORDER BY date DESC")
     fun getAllExpenses(userId: Int): Flow<List<ExpenseEntity>>
 

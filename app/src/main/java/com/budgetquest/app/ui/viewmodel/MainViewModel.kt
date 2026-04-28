@@ -75,7 +75,7 @@ class MainViewModel @Inject constructor(
         else expenseRepository.getSpendingByCategory(user.id, start, end)
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
+        started = SharingStarted.Eagerly,
         initialValue = emptyList()
     )
 
@@ -86,7 +86,7 @@ class MainViewModel @Inject constructor(
         else expenseRepository.getTotalSpending(user.id, start, end).map { it ?: 0.0 }
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
+        started = SharingStarted.Eagerly,
         initialValue = 0.0
     )
 
@@ -97,7 +97,7 @@ class MainViewModel @Inject constructor(
         else expenseRepository.getExpensesInRange(user.id, start, end)
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
+        started = SharingStarted.Eagerly,
         initialValue = emptyList()
     )
 
@@ -118,9 +118,11 @@ class MainViewModel @Inject constructor(
             val maxTotal = spendingList.maxOfOrNull { it.total } ?: 1.0
             spendingList
                 .sortedByDescending { it.total }
-                .take(5)
-                .map { spending ->
-                    val catName = catList.find { it.id == spending.categoryId }?.name ?: "???"
+                .mapNotNull { spending ->
+                    val category = catList.find { it.id == spending.categoryId }
+                    if (category == null) return@mapNotNull null
+                    
+                    val catName = category.name
                     val color = when(catName.lowercase()) {
                         "groceries" -> "NeonCyan"
                         "transport" -> "NeonPurple"
@@ -134,6 +136,7 @@ class MainViewModel @Inject constructor(
                         color = color
                     )
                 }
+                .take(5)
         }
     }.stateIn(
         scope = viewModelScope,
@@ -256,6 +259,19 @@ class MainViewModel @Inject constructor(
                     userId = user.id
                 )
             )
+        }
+    }
+
+    fun updateCategory(category: CategoryEntity) {
+        viewModelScope.launch {
+            expenseRepository.insertCategory(category) // Room @Insert(onConflict = REPLACE)
+        }
+    }
+
+    fun deleteCategory(category: CategoryEntity) {
+        viewModelScope.launch {
+            expenseRepository.deleteCategory(category)
+            expenseRepository.deleteExpensesByCategory(category.id)
         }
     }
 

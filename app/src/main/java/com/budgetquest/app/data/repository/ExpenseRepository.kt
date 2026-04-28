@@ -27,6 +27,8 @@ class ExpenseRepository @Inject constructor(
 
     suspend fun deleteCategory(category: CategoryEntity) = budgetDao.deleteCategory(category)
 
+    suspend fun deleteExpensesByCategory(categoryId: Int) = budgetDao.deleteExpensesByCategory(categoryId)
+
 
     fun getTotalSpending(userId: Int, start: Long, end: Long) = budgetDao.getTotalSpendingInRange(userId, start, end)
 

@@ -39,6 +39,8 @@ fun CategoriesScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var showAddDialog by remember { mutableStateOf(false) }
+    var categoryToEdit by remember { mutableStateOf<CategoryEntity?>(null) }
+    var categoryToDelete by remember { mutableStateOf<CategoryEntity?>(null) }
 
     Scaffold(
         containerColor = CyberBackground,
@@ -60,7 +62,12 @@ fun CategoriesScreen(
         ) {
             items(categories) { category ->
                 val categorySpent = spending.find { it.categoryId == category.id }?.total ?: 0.0
-                CategoryCard(category, categorySpent)
+                CategoryCard(
+                    category = category, 
+                    spent = categorySpent,
+                    onEdit = { categoryToEdit = category },
+                    onDelete = { categoryToDelete = category }
+                )
             }
 
             item {
@@ -84,7 +91,7 @@ fun CategoriesScreen(
     }
 
     if (showAddDialog) {
-        AddCategoryDialog(
+        CategoryDialog(
             onDismiss = { showAddDialog = false },
             onConfirm = { name, limit, icon ->
                 viewModel.addCategory(name, limit, icon)
@@ -95,17 +102,62 @@ fun CategoriesScreen(
             }
         )
     }
+
+    if (categoryToEdit != null) {
+        CategoryDialog(
+            initialCategory = categoryToEdit,
+            onDismiss = { categoryToEdit = null },
+            onConfirm = { name, limit, icon ->
+                viewModel.updateCategory(categoryToEdit!!.copy(name = name, monthlyLimit = limit, icon = icon))
+                categoryToEdit = null
+                scope.launch {
+                    snackbarHostState.showSnackbar("Category UPDATED: $name")
+                }
+            }
+        )
+    }
+
+    if (categoryToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { categoryToDelete = null },
+            containerColor = CyberSurface,
+            title = { Text("DELETION PROTOCOL", color = ThresholdMax, fontWeight = FontWeight.Black) },
+            text = { Text("Are you sure you want to delete ${categoryToDelete?.name}? This cannot be undone.", color = Color.White) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteCategory(categoryToDelete!!)
+                        categoryToDelete = null
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Category DELETED")
+                        }
+                    }
+                ) {
+                    Text("DELETE", color = ThresholdMax, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { categoryToDelete = null }) {
+                    Text("CANCEL", color = Color.White.copy(alpha = 0.6f))
+                }
+            },
+            shape = RoundedCornerShape(24.dp)
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddCategoryDialog(
+fun CategoryDialog(
+    initialCategory: CategoryEntity? = null,
     onDismiss: () -> Unit,
     onConfirm: (String, Double, String) -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var limit by remember { mutableStateOf("") }
-    var selectedIcon by remember { mutableStateOf("shopping_cart") }
+    var name by remember { mutableStateOf(initialCategory?.name ?: "") }
+    var limit by remember { mutableStateOf(initialCategory?.monthlyLimit?.toString() ?: "") }
+    var selectedIcon by remember { mutableStateOf(initialCategory?.icon ?: "shopping_cart") }
+    
+    val isEditing = initialCategory != null
     
     val icons = listOf(
         "shopping_cart", "directions_car", "movie", "receipt_long", "account_balance_wallet", "category"
@@ -114,7 +166,7 @@ fun AddCategoryDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = CyberSurface,
-        title = { Text("NEW CATEGORY PROTOCOL", color = CyberGold, fontWeight = FontWeight.Black) },
+        title = { Text(if (isEditing) "EDIT CATEGORY DATA" else "NEW CATEGORY PROTOCOL", color = CyberGold, fontWeight = FontWeight.Black) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 OutlinedTextField(
@@ -184,7 +236,7 @@ fun AddCategoryDialog(
                 },
                 enabled = name.isNotBlank() && limit.toDoubleOrNull() != null
             ) {
-                Text("INITIALIZE", color = NeonCyan, fontWeight = FontWeight.Bold)
+                Text(if (isEditing) "UPDATE" else "INITIALIZE", color = NeonCyan, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
@@ -197,7 +249,12 @@ fun AddCategoryDialog(
 }
 
 @Composable
-fun CategoryCard(category: CategoryEntity, spent: Double) {
+fun CategoryCard(
+    category: CategoryEntity, 
+    spent: Double,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
     val progress = (spent / category.monthlyLimit).toFloat().coerceIn(0f, 1f)
     val percentage = (progress * 100).toInt()
     
@@ -243,6 +300,19 @@ fun CategoryCard(category: CategoryEntity, spent: Double) {
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
                 )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onEdit) {
+                    Icon(Icons.Default.Edit, contentDescription = "Edit", tint = NeonCyan.copy(alpha = 0.7f), modifier = Modifier.size(20.dp))
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Default.Delete, contentDescription = "Delete", tint = ThresholdMax.copy(alpha = 0.7f), modifier = Modifier.size(20.dp))
+                }
             }
 
             LinearProgressIndicator(

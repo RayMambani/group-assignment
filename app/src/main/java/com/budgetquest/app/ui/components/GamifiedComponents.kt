@@ -1,12 +1,15 @@
 package com.budgetquest.app.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
@@ -239,17 +242,57 @@ fun CategoryOrb(
 @Composable
 fun CategoryOrbGrid(
     categories: List<com.budgetquest.app.data.local.entity.CategoryEntity>,
-    spending: List<com.budgetquest.app.data.local.dao.CategorySpending>
+    spending: List<com.budgetquest.app.data.local.dao.CategorySpending>,
+    onViewMore: () -> Unit = {}
 ) {
     val colors = listOf(NeonGreen, NeonCyan, NeonPurple, NeonPink)
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceAround
     ) {
-        categories.take(4).forEachIndexed { index, category ->
+        val maxDisplay = 4
+        val showMore = categories.size > maxDisplay
+        val categoriesToShow = if (showMore) categories.take(maxDisplay - 1) else categories.take(maxDisplay)
+
+        categoriesToShow.forEachIndexed { index, category ->
             val spent = spending.find { it.categoryId == category.id }?.total ?: 0.0
             val percentage = ((spent / category.monthlyLimit) * 100).toInt().coerceIn(0, 100)
             CategoryOrb(category.name, percentage, colors[index % colors.size])
+        }
+        
+        if (showMore) {
+            Box(
+                modifier = Modifier
+                    .size(70.dp)
+                    .clickable { onViewMore() },
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Surface(
+                        modifier = Modifier.size(50.dp),
+                        color = CyberSurface,
+                        shape = CircleShape,
+                        border = BorderStroke(1.dp, NeonCyan.copy(alpha = 0.5f))
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "More",
+                                tint = NeonCyan,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "MORE",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.Gray,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
     }
 }
