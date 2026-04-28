@@ -59,8 +59,14 @@ The project leverages GitHub Actions for continuous integration. The pipeline is
 ## Project Contributors
 
 *   **Ray Mambani** - Project Lead
-*   **Group Members** - System Development
+*   **Sandisiwe Manyathi** - Group Member
+*   **Kefilwe Mogano** - Group Member
 
 ## Licensing
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for comprehensive details.
+
+
+## Video Presentation Link
+
+https://youtu.be/a8E8j25oy9k?si=neyjzFO6btsq2sdh
